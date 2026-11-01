@@ -167,3 +167,13 @@ not be overwritten. Authentication completed and the public repository was creat
 [https://github.com/AriSchermuk/Challenge-IOL](https://github.com/AriSchermuk/Challenge-IOL). Initial implementation commit: `ec2a7f7`;
 `main` tracks `origin/main`. Publication does not mark the understanding review
 or interviewer submission complete.
+
+## D15: readability refactor (explicitly authorized)
+
+The owner approved selective Optional use, constant-first String equality, explicit
+variable/unit names, and cohesive method extraction, with before/after explanation
+and verification before GitHub synchronization. `pin` and `readClientId` return
+Optional; lock/finally paths remain imperative. `unpin` and `writeDecision` expose
+cohesive lifecycle/HTTP responsibilities. Registry cleanup retains its iterator loop;
+existing test-result Streams retain their role with descriptive lambda parameters.
+No quota, locking, error contract, or configuration behavior changes are intended.

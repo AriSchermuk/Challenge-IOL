@@ -36,20 +36,20 @@ class RateLimiterTest {
     @Test void simultaneousFirstUseCannotOverspend() throws Exception {
         var limiter = new RateLimiter(10, 1, 10, () -> 0);
         assertEquals(10, race(64, i -> limiter.acquire("same")).stream()
-                .filter(d -> d.status() == Decision.Status.ALLOWED).count());
+                .filter(decision -> decision.status() == Decision.Status.ALLOWED).count());
     }
     @Test void simultaneousCreationCannotExceedRegistryBound() throws Exception {
         var limiter = new RateLimiter(1, 1, 7, () -> 0);
         var results = race(48, i -> limiter.acquire("client" + i));
-        assertEquals(7, results.stream().filter(d -> d.status() == Decision.Status.ALLOWED).count());
-        assertEquals(41, results.stream().filter(d -> d.status() == Decision.Status.SATURATED).count());
+        assertEquals(7, results.stream().filter(decision -> decision.status() == Decision.Status.ALLOWED).count());
+        assertEquals(41, results.stream().filter(decision -> decision.status() == Decision.Status.SATURATED).count());
     }
     @Test void differentClientsProgressWhileOneIsBlockedAndPinnedEntriesCannotBeRemoved() throws Exception {
         var entered = new CountDownLatch(1);
         var release = new CountDownLatch(1);
         var pause = new AtomicBoolean();
         LongSupplier clock = () -> {
-            if (Thread.currentThread().getName().equals("blocked") && pause.get()) {
+            if ("blocked".equals(Thread.currentThread().getName()) && pause.get()) {
                 entered.countDown();
                 await(release);
             }
@@ -103,7 +103,7 @@ class RateLimiterTest {
         for (int i = 0; i < 8; i++) limiter.acquire("client" + i);
         time.set(1_000_000_000);
         var results = race(64, i -> limiter.acquire("client" + (i % 16)));
-        assertEquals(8, results.stream().filter(d -> d.status() == Decision.Status.ALLOWED).count());
+        assertEquals(8, results.stream().filter(decision -> decision.status() == Decision.Status.ALLOWED).count());
     }
     private static List<Decision> race(int count, java.util.function.IntFunction<Decision> action) throws Exception {
         var ready = new CountDownLatch(count);

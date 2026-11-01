@@ -19,9 +19,9 @@ has a SHA-256 pin in `.mvn/wrapper/maven-wrapper.properties`.
 - Unit tests: 16 passed, no failures/errors/skips.
 - Real-server integration tests: 1 passed, no failures/errors/skips. This scenario
   verifies multiple HTTP/error/retry/identity cases against a controlled clock.
-- Application line coverage: 114/116 = **98.28%**.
-- Application branch coverage: 46/47 = **97.87%**.
-- Core line coverage: 72/72 = **100%**.
+- Application line coverage: 123/125 = **98.40%**.
+- Application branch coverage: 48/49 = **97.96%**.
+- Core line coverage: 77/77 = **100%**.
 - Core branch coverage: 29/30 = **96.67%**.
 
 JaCoCo 0.8.16 combines unit and integration execution. HTML/XML reports are generated
@@ -84,10 +84,10 @@ Adding unzip to the builder fixed this; checksum validation remains enabled.
 Builder and runtime base images remain pinned to official registry digests.
 
 - Full Linux image build: SUCCESS; all 17 unit/integration tests pass inside it.
-- Exported Linux report: 114/116 covered lines (98.28%), 46/47 branches (97.87%),
+- Exported Linux report: 123/125 covered lines (98.40%), 48/49 branches (97.96%),
   matching the native Java verification.
 - Image `iol-rate-limiter:local` is present in the Colima engine. Verified image
-  manifest: `sha256:d0f39da846e1ba90df8a86dfe8a3861536122455e4cda39b45c16bbb30a29cbd`.
+  manifest: `sha256:31200a11386181ce987c18fedc3cdc93b9262986bb20270e4862f36528a08682`.
 - Ran the image with `LIMITER_CAPACITY=1`, `LIMITER_REFILLTOKENSPERSECOND=1`, and
   `LIMITER_MAXCLIENTS=1`, publishing an ephemeral port on host loopback.
 - Health 200, invalid identity 400, allowed request 200, exhausted quota 429 with
@@ -143,3 +143,19 @@ a local browser. The Python script is explicitly the brief end-to-end demonstrat
 reports, downloaded tools, caches, and local logs remain ignored by Git.
 Understanding and final submission review are not claimed complete; the owner
 will answer five questions on the key algorithm/concurrency tradeoffs.
+
+## Readability refactor verification
+
+Selective Optional return types, descriptive unit/state names, constant-first String
+equality, and `unpin`/`readClientId`/`writeDecision` extraction were explicitly approved.
+Java `clean verify` passes (17 tests), Docker build passes with those same tests
+inside Linux, the Python runner passes 26/26 scenarios, and container runtime smoke
+checks plus coverage export pass. Current coverage figures above include the refactor.
+Behavioral tests were preserved; only String equality orientation and descriptive
+Stream lambda names changed in a test. Lock ordering, reference lifecycle, policy,
+HTTP statuses, and configuration remain the approved contract.
+
+A clean export of the staged Git tree (without `.tools`, build outputs, or untracked
+files) also built successfully as `iol-rate-limiter:clean-checkout`; its Linux build
+reran all 17 tests successfully. This confirms the Docker build does not depend
+on the workstation's ignored toolchain/cache directories.

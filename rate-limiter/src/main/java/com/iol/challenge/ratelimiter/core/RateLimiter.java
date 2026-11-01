@@ -3,79 +3,85 @@ package com.iol.challenge.ratelimiter.core;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.LongSupplier;
 
 public final class RateLimiter {
-    private final int capacity;
-    private final int rate;
+    private final int capacityTokens;
+    private final int refillTokensPerSecond;
     private final int maxClients;
-    private final LongSupplier clock;
-    private final Map<String, Entry> entries = new HashMap<>();
-    private final ReentrantLock registry = new ReentrantLock();
+    private final LongSupplier nanoTimeSource;
+    private final Map<String, ClientEntry> clientEntries = new HashMap<>();
+    private final ReentrantLock registryLock = new ReentrantLock();
 
-    public RateLimiter(int capacity, int rate, int maxClients, LongSupplier clock) {
-        validate(capacity);
-        validate(rate);
+    public RateLimiter(int capacityTokens, int refillTokensPerSecond, int maxClients, LongSupplier nanoTimeSource) {
+        validate(capacityTokens);
+        validate(refillTokensPerSecond);
         validate(maxClients);
-        this.capacity = capacity;
-        this.rate = rate;
+        this.capacityTokens = capacityTokens;
+        this.refillTokensPerSecond = refillTokensPerSecond;
         this.maxClients = maxClients;
-        this.clock = Objects.requireNonNull(clock);
+        this.nanoTimeSource = Objects.requireNonNull(nanoTimeSource);
     }
 
     public Decision acquire(String clientId) {
         Objects.requireNonNull(clientId);
-        Entry entry = pin(clientId);
-        if (entry == null) return Decision.saturated();
+        Optional<ClientEntry> pinnedEntry = pin(clientId);
+        if (pinnedEntry.isEmpty()) return Decision.saturated();
+        ClientEntry entry = pinnedEntry.orElseThrow();
         try {
-            entry.lock.lock();
+            entry.bucketLock.lock();
             try {
-                return entry.bucket.acquire(clock.getAsLong());
+                return entry.tokenBucket.acquire(nanoTimeSource.getAsLong());
             } finally {
-                entry.lock.unlock();
+                entry.bucketLock.unlock();
             }
         } finally {
-            registry.lock();
-            try {
-                entry.references--;
-            } finally {
-                registry.unlock();
-            }
+            unpin(entry);
         }
     }
 
-    private Entry pin(String clientId) {
-        registry.lock();
+    private void unpin(ClientEntry entry) {
+        registryLock.lock();
         try {
-            Entry entry = entries.get(clientId);
-            if (entry == null) {
-                if (entries.size() == maxClients && !reclaim()) return null;
-                entry = new Entry(new TokenBucket(capacity, rate));
-                entries.put(clientId, entry);
-            }
-            // Includes callers waiting for this bucket's lock, preventing stale references.
-            entry.references++;
-            return entry;
+            entry.activeOrWaitingRequests--;
         } finally {
-            registry.unlock();
+            registryLock.unlock();
+        }
+    }
+
+    private Optional<ClientEntry> pin(String clientId) {
+        registryLock.lock();
+        try {
+            ClientEntry entry = clientEntries.get(clientId);
+            if (entry == null) {
+                if (clientEntries.size() == maxClients && !reclaim()) return Optional.empty();
+                entry = new ClientEntry(new TokenBucket(capacityTokens, refillTokensPerSecond));
+                clientEntries.put(clientId, entry);
+            }
+            // Includes callers waiting for this bucket's lock, preventing use of a detached bucket.
+            entry.activeOrWaitingRequests++;
+            return Optional.of(entry);
+        } finally {
+            registryLock.unlock();
         }
     }
 
     private boolean reclaim() {
-        var iterator = entries.values().iterator();
+        var iterator = clientEntries.values().iterator();
         while (iterator.hasNext()) {
-            Entry entry = iterator.next();
-            if (entry.references != 0) continue;
-            // No request can pin the entry while registry is held. Never wait here.
-            if (!entry.lock.tryLock()) continue;
+            ClientEntry entry = iterator.next();
+            if (entry.activeOrWaitingRequests != 0) continue;
+            // No request can pin the entry while the registry lock is held. Never wait here.
+            if (!entry.bucketLock.tryLock()) continue;
             try {
-                if (entry.bucket.full(clock.getAsLong())) {
+                if (entry.tokenBucket.full(nanoTimeSource.getAsLong())) {
                     iterator.remove();
                     return true;
                 }
             } finally {
-                entry.lock.unlock();
+                entry.bucketLock.unlock();
             }
         }
         return false;
@@ -87,10 +93,10 @@ public final class RateLimiter {
         }
     }
 
-    private static final class Entry {
-        private final ReentrantLock lock = new ReentrantLock();
-        private final TokenBucket bucket;
-        private long references;
-        private Entry(TokenBucket bucket) { this.bucket = bucket; }
+    private static final class ClientEntry {
+        private final ReentrantLock bucketLock = new ReentrantLock();
+        private final TokenBucket tokenBucket;
+        private long activeOrWaitingRequests;
+        private ClientEntry(TokenBucket tokenBucket) { this.tokenBucket = tokenBucket; }
     }
 }

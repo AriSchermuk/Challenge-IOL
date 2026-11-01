@@ -175,9 +175,11 @@ different clients must be able to execute their accounting independently. Read
 elapsed time within the protected accounting operation. Release locks before
 endpoint execution, logging, or other external work.
 
-Use a registry `HashMap` guarded by one `ReentrantLock`. Each entry has a separate
-`ReentrantLock`, bucket state, and an in-use reference count guarded by the registry
-lock. This count includes requests waiting for the bucket lock.
+Use a registry `HashMap` named `clientEntries` guarded by `registryLock`. Each
+`ClientEntry` has a separate `bucketLock`, `tokenBucket` state, and an
+`activeOrWaitingRequests` count guarded by the registry lock. `pin` returns an
+`Optional<ClientEntry>`; empty means no tracking capacity is available. `unpin`
+releases the reference under the registry lock. This count includes requests waiting for the bucket lock.
 
 1. Acquire the registry lock. Look up the entry; for an unknown client, reclaim
    space if necessary, then create exactly one entry or report saturation. Increment
@@ -242,7 +244,8 @@ through GET mappings. OPTIONS returns metadata only (Allow: GET, OPTIONS); other
 unsupported methods return 405, and unknown routes return 404, without consuming
 quota. These routing responses need not share the limiter's JSON error contract.
 
-The interceptor checks identity, calls the core once, and either proceeds or writes
+The interceptor obtains a validated ID via `readClientId` (`Optional<String>`),
+calls the core once, and uses `writeDecision` to either proceed or write
 the specified response. Process only the initial REQUEST dispatch; do not charge
 again on error dispatch. The demo uses synchronous controllers, with no async or
 forward-based business flow. A controller advice maps unexpected application

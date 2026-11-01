@@ -18,7 +18,9 @@ flow, and client concurrency described below.
 `LimiterConfiguration` creates the core with a monotonic clock and logs the policy.
 `WebConfiguration` installs `AdmissionInterceptor` for resolved `/api/**` handlers.
 
-The interceptor guards methods, validates identity, and calls `RateLimiter.acquire`.
+The interceptor guards methods, obtains an `Optional<String>` from `readClientId`,
+and calls `RateLimiter.acquire`. `writeDecision` translates the decision to HTTP;
+`writeError` writes the JSON error contract.
 It allows the controller to execute, or returns 400/429/503 with a simple JSON error.
 Retry-After is upward-rounded whole seconds. `DemoController` returns a small success
 response; health is outside the protected path. `ApplicationErrors` logs unexpected
@@ -44,17 +46,22 @@ Tests control ticks; production uses System.nanoTime rather than calendar time.
 A negative tick difference grants no refill and leaves the reference unchanged.
 Monotonic counter wrap is supported through subtraction for intervals below 2^63 ns.
 
+The names `availableCredit`, `maximumCredit`, `refillTokensPerSecond`, and
+`lastAccountingNanos` make units and responsibilities explicit.
+
 Integer credit avoids floating-point tolerances at exact admission boundaries.
 The cost is explicit scale/rounding/overflow reasoning. A refill thread would add
 scheduling and shutdown concerns without improving these lazy calculations.
 
 ## Per-client concurrency and bounded state
 
-The registry is a HashMap protected by a registry ReentrantLock. Every entry has
-its own lock, TokenBucket, and reference count. Registry admission increments the
+The `clientEntries` registry is a HashMap protected by `registryLock`. Each
+`ClientEntry` has a `bucketLock`, `tokenBucket`, and `activeOrWaitingRequests` count. Registry admission increments the
 count before releasing the registry lock, so references include callers waiting
 for the client lock. Accounting then takes only that client lock. It releases the
-client lock before decrementing the count under the registry lock in an outer finally.
+client lock before calling `unpin` in an outer finally; `unpin` decrements the count
+under the registry lock. `pin` returns `Optional<ClientEntry>`; an empty result maps
+to tracking saturation, keeping this absence explicit without a null return.
 
 When full, registry admission scans for an unreferenced bucket, tries its lock
 without waiting, refills it, and removes it only if full. Removal and replacement
