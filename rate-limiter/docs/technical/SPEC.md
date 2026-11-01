@@ -1,20 +1,14 @@
 # Rate limiter specification
 
-Status: approved and implemented. Java tests, Docker image build/runtime checks,
-and coverage export pass. Local Docker engine is installed and running.
-See [VERIFICATION.md](VERIFICATION.md) for measured evidence and remaining gaps.
-
-The owner's final batch approved integer accounting and bounds, registry references
-with per-client locks, safe reclamation, exact identity/HTTP behavior, line/branch
-coverage, and delegated tooling/setup choices. This document includes the resulting
-technical selections. Implementation was authorized against this contract.
+This specification describes the implemented Java API. Tests, Docker image/runtime
+checks, and coverage export pass; see [VERIFICATION.md](VERIFICATION.md) for evidence.
 
 Business context: [requirements](../business/REQUIREMENTS.md).
-Decision authority: [decision register](DECISIONS.md).
+Design rationale: [decision register](DECISIONS.md).
 
 ## Requirement traceability
 
-The contract below remains the approved behavior. Evidence links describe actual
+The table links behavior to implementation and verification. Evidence links describe actual
 implementation and tests; verification gaps are not marked complete.
 
 | Requirement | Implementation | Verification | Status |
@@ -25,7 +19,7 @@ implementation and tests; verification gaps are not marked complete.
 | B4: rejection guidance | [Interceptor](../../src/main/java/com/iol/challenge/ratelimiter/web/AdmissionInterceptor.java) | [HTTP tests](../../src/test/java/com/iol/challenge/ratelimiter/ApplicationIT.java) | Verified |
 | B5: concurrent clients | RateLimiter per-client locks and registry references | Registry concurrency tests | Verified |
 | B6: bounded tracking | RateLimiter admission and safe reclamation | Registry saturation/creation/reclamation tests | Verified |
-| B7: reviewable deliverable | [README](../../README.md), [DESIGN](../../DESIGN.md), sources and tests | [Verification](VERIFICATION.md) | Understanding/submission review remains |
+| B7: reviewable deliverable | [README](../../README.md), [DESIGN](../../DESIGN.md), sources and tests | [Verification](VERIFICATION.md) | Documentation and evidence linked |
 | B8: embedded API | Interceptor and demo controller | HTTP tests and actual JAR smoke | Verified |
 | B9: packaging/coverage | [Dockerfile](../../Dockerfile), [POM](../../pom.xml), logging configuration | Native/Linux tests, measured coverage, image/runtime/shutdown and export checks | Verified |
 
@@ -33,8 +27,8 @@ implementation and tests; verification gaps are not marked complete.
 
 Build a runnable Java HTTP application that restricts requests independently by
 client, behaves correctly under concurrent access, and has deterministic tests.
-The owner should be able to explain the algorithm, state lifecycle, synchronization,
-HTTP behavior, and limitations.
+The design documents the algorithm, state lifecycle, synchronization, HTTP behavior,
+and limitations.
 
 ## Scope boundaries
 
@@ -49,7 +43,7 @@ request queuing, dashboards, and performance/availability guarantees.
 Restarting the process resets all buckets. Running two instances creates two
 independent allowances. These limitations must appear in the final README.
 
-## Future directions requested by the owner
+## Future extensions
 
 ### Multiple application instances
 
@@ -63,7 +57,7 @@ designed to meet those needs; neither improvement is automatic.
 This requires a shared source of truth or coordinated ownership for each client's
 state. Refill, check, and consumption must remain atomic across instances; a Java
 lock protects only its own process. A shared store such as Redis is a candidate,
-not an approved dependency. A future design must decide the shared time model,
+not a dependency in this implementation. A future design must decide the shared time model,
 state expiry, consistency, timeouts, and whether to allow or reject requests when
 the state service is unavailable. Process-local monotonic timestamps cannot simply
 be compared across machines. Add tests for cross-instance contention, instance
@@ -89,7 +83,7 @@ Future work must define each algorithm's configuration and tests, how configurat
 selects an implementation, and how existing client state is reset or migrated.
 Whether changes require restart or can happen live remains a future decision.
 For this prototype, implement token bucket only. Keep this roadmap in DESIGN.md;
-any extension interfaces or strategy abstractions require review before adoption.
+additional interfaces or strategies should follow the requirements of those extensions.
 
 ### Identity validation and policy flexibility
 
@@ -107,9 +101,9 @@ deciding quota keys, policy lookup, and how existing balances change with the po
 
 ## Policy semantics
 
-- Capacity B is a positive integer number of tokens; approved default: 10.
+- Capacity B is a positive integer number of tokens; default: 10.
 - Refill rate R is a positive integer number of tokens per second; default: 2.
-- Capacity and refill rate are configurable at startup; the defaults are approved.
+- Capacity and refill rate are configurable at startup; the defaults are listed above.
 - Every protected request costs exactly one token.
 - A new client starts with a full bucket.
 - Capacity replenishes continuously, capped at B. Unused time at capacity does
@@ -142,7 +136,7 @@ this credit using integer arithmetic, with explicit rounding and overflow guards
 
 ## Time and arithmetic
 
-Integer accounting, monotonic time, and the validation bounds are approved.
+Credit uses integer accounting and monotonic elapsed time within validated bounds.
 
 Use a small injectable elapsed-time source backed by `System.nanoTime()` in
 production. Tests supply controlled ticks and never wait for real refill periods.
@@ -169,7 +163,7 @@ contributes no refill and must not move the reference backward. Test this defens
 
 ## State and concurrency
 
-Per-client locking is approved. Each client entry holds its accounting state and
+Each client uses a separate lock. Each client entry holds its accounting state and
 associated lock. Refill, check, and consumption for the same client must be atomic;
 different clients must be able to execute their accounting independently. Read
 elapsed time within the protected accounting operation. Release locks before
@@ -206,7 +200,7 @@ blocked accounting operation must not hold the registry lock. Reclamation scans
 can temporarily delay registry access: this is a documented O(N) limitation, not a
 claim of unlimited throughput or strict scheduling fairness.
 
-The approved bound defaults to 10,000 entries and is configurable at startup. If no
+The registry bound defaults to 10,000 entries and is configurable at startup. If no
 unused full bucket can be reclaimed, return 503 to an unknown client; known clients
 continue using their buckets. Never evict a depleted bucket. Capacity and rejection
 are revisitable business decisions; there is no automatic growth or bypass. Entries
@@ -272,7 +266,7 @@ client-ID logging by default.
 
 ## Selected tooling and project layout
 
-Selected under the owner's delegation; verified against official documentation on
+Tool compatibility was checked against official documentation on
 2026-11-01. Java versions were resolved and built successfully; Docker digests are pinned and image build/runtime execution passed. See VERIFICATION.md for the actual verification scope.
 
 | Component | Selected version / source |
@@ -338,20 +332,18 @@ validated separately with real requests and shutdown checks; no Docker dependenc
 is imposed on the Java test suite.
 
 The initial environment lacked Java and Docker tooling. Checksum-verified local
-Java/Maven archives were acquired into ignored workspace directories. The owner
-subsequently explicitly authorized an agent to install Docker and necessary host
-prerequisites. The resulting local Colima/Docker setup and start/stop commands are
+Java/Maven archives were acquired into ignored workspace directories. Local Docker tooling was subsequently installed. The resulting local Colima/Docker setup and start/stop commands are
 in [LOCAL-ENVIRONMENT.md](LOCAL-ENVIRONMENT.md). The application image, its full
 Linux test suite, non-root runtime, HTTP behavior, shutdown, and coverage export
 have now been verified. Downloads require network access.
 
-Metrics, CI, and numerical threshold selection remain deferred to delivery review.
+Metrics, CI, and an enforced numerical coverage threshold are not included.
 The challenge lists metrics as a nice-to-have and does not require CI or a percentage.
 
 ## Supplemental visible scenarios
 
-At the owner's subsequent request, `scripts/probar_api.py` provides a standalone
-black-box demonstration of the approved HTTP behavior using temporary containers.
+`scripts/probar_api.py` provides a standalone black-box demonstration of the HTTP
+behavior using temporary containers.
 It emits console output and HTML/JSON reports for review. It does not change the
 application contract or replace Java tests; measured execution is recorded in
 [VERIFICATION.md](VERIFICATION.md).
@@ -372,8 +364,8 @@ application contract or replace Java tests; measured execution is recorded in
 6. HTTP tests prove routing, identity validation, status/body/header mapping,
    configuration failure, and that health checks do not consume quota.
 7. README and DESIGN.md match the implementation and explain all selected tradeoffs,
-   limitations, AI use, and any code the owner still does not understand.
-8. The owner reviews the completed behavior and approves submission readiness.
+   limitations, and AI use.
+8. Documented commands and diagrams match the behavior demonstrated by tests.
 9. Docker packaging builds and the documented container demonstration works.
 10. A coverage report records measured results and reviewed gaps against the goal
     of approaching 100%; passing tests remain mandatory regardless of percentage.

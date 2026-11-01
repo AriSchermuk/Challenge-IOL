@@ -1,7 +1,6 @@
 # Local development environment
 
-Docker was installed for this workstation on 2026-11-01 under the owner's explicit
-request to make the container environment available. Application dependencies and
+Docker was installed for this workstation on 2026-11-01. Application dependencies and
 images remain separate from these host tools.
 
 This is a record of the author workstation; another developer may use any compatible

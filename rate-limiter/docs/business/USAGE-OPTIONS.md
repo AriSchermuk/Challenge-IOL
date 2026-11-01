@@ -1,7 +1,7 @@
 # How the limiter could be used
 
-Status: option 1 (embedded demo API) is approved under decision D3. Alternatives
-are retained as decision context. Examples are illustrative, not approved API contracts.
+The implementation uses option 1, an embedded demo API. Alternatives are retained
+to explain integration tradeoffs. Examples are illustrative; SPEC.md defines the API.
 
 All three options can implement the same token bucket rules. The choice determines
 who calls the limiter, how it is demonstrated, and what must be deployed.
@@ -77,7 +77,7 @@ packaging, and usage documentation become central deliverables. A local library
 still has separate state in separate processes unless later extended.
 
 This fits a focused component challenge if that presentation is preferred. An HTTP
-adapter can be added later, but it would be an explicitly approved extension.
+adapter can be added later, but it would be an additional integration feature.
 
 ## Comparison
 

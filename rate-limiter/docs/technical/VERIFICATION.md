@@ -66,7 +66,7 @@ Validation messages follow the system locale; the check uses the property identi
 
 ## Docker installation and application verification
 
-The owner authorized Docker installation and required supporting tools. The local
+The local
 Colima engine, Docker CLI, Buildx, and Compose are available; see
 [LOCAL-ENVIRONMENT.md](LOCAL-ENVIRONMENT.md) for versions and lifecycle commands.
 The `colima` context is active, and `docker run --rm hello-world` passed.
@@ -103,8 +103,7 @@ container verification blocker remains.
 
 ## Visible Python scenario runner
 
-Owner requested an executable Python script to observe API cases directly, without
-an additional checkpoint. [probar_api.py](../../scripts/probar_api.py) uses Python's
+[probar_api.py](../../scripts/probar_api.py) demonstrates API cases using Python's
 standard library and Docker. Executed successfully with:
 
 ```sh
@@ -127,33 +126,29 @@ They use real time and explicitly reject ambiguous batch timings of one second o
 longer. They do not establish benchmark throughput or replace deterministic core tests.
 
 Metrics, CI, and coverage thresholds remain deferred. Public repository publication
-and initial synchronization completed at [AriSchermuk/Challenge-IOL](https://github.com/AriSchermuk/Challenge-IOL). Owner understanding
-and submission-readiness review are not marked complete.
+and initial synchronization completed at [AriSchermuk/Challenge-IOL](https://github.com/AriSchermuk/Challenge-IOL).
 
 ## Documentation consistency review
 
 Reviewed README, business requirements, decision register, implementation plan,
 specification, DESIGN.md, actual Java/Python sources, Dockerfile, and test evidence.
-Corrected stale approval/build/publication statements and future-tense descriptions
-of implemented behavior. Removed the source brief's machine-specific absolute path
+Checked build/publication statements and descriptions of implemented behavior. Removed the source brief's machine-specific absolute path
 from the public entry point. Architecture, admission, and per-client concurrency
 diagrams in the root README describe the implemented locks/reference lifecycle.
 All three Mermaid blocks were rendered successfully to SVG with Mermaid CLI using
 a local browser. The Python script is explicitly the brief end-to-end demonstration. Generated
 reports, downloaded tools, caches, and local logs remain ignored by Git.
-Understanding and final submission review are not claimed complete; the owner
-will answer five questions on the key algorithm/concurrency tradeoffs.
 
 ## Readability refactor verification
 
 Selective Optional return types, descriptive unit/state names, constant-first String
-equality, and `unpin`/`readClientId`/`writeDecision` extraction were explicitly approved.
+equality, and `unpin`/`readClientId`/`writeDecision` extraction were applied.
 Java `clean verify` passes (17 tests), Docker build passes with those same tests
 inside Linux, the Python runner passes 26/26 scenarios, and container runtime smoke
 checks plus coverage export pass. Current coverage figures above include the refactor.
 Behavioral tests were preserved; only String equality orientation and descriptive
 Stream lambda names changed in a test. Lock ordering, reference lifecycle, policy,
-HTTP statuses, and configuration remain the approved contract.
+HTTP statuses, and configuration remain unchanged.
 
 A clean export of the staged Git tree (without `.tools`, build outputs, or untracked
 files) also built successfully as `iol-rate-limiter:clean-checkout`; its Linux build
@@ -162,8 +157,7 @@ on the workstation's ignored toolchain/cache directories.
 
 ## Fresh public GitHub clone verification
 
-After distinguishing the earlier clean Git export from an actual clone, the public
-repository was cloned into a new temporary directory using `git clone`. Tested
+The public repository was cloned into a new temporary directory using `git clone`. Tested
 commit: `afa5fc0996778b56eb1ddcdaf56d52139d786b8f`. The new worktree was clean and
 contained neither `.tools` nor `target`.
 

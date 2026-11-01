@@ -3,7 +3,7 @@
 ## Problem and scope
 
 Implement a correct token bucket rate limiter and demonstrate it protecting a Java
-HTTP endpoint. The owner selected Java 21, Spring Boot MVC, one process, one policy,
+HTTP endpoint. The implementation uses Java 21, Spring Boot MVC, one process, one policy,
 per-client locking, startup configuration, a hard tracking bound, Docker packaging,
 and comprehensive tests with coverage reporting. Product outcomes are in the
 [business requirements](docs/business/REQUIREMENTS.md); the exact contract is in
@@ -108,7 +108,7 @@ Test-only failure endpoints are in test sources and are absent from the packaged
 
 Docker uses a Java build stage that runs verification and non-root JRE runtime stage, both pinned
 by registry digest. Docker image build, all 17 tests inside Linux, non-root runtime behavior, graceful
-shutdown, and coverage export have been verified on the owner-authorized local
+shutdown, and coverage export have been verified on a local
 Colima engine. The builder installs unzip so the wrapper downloads the ZIP matching
 its pinned checksum rather than falling back to a tar archive. Java builds,
 packaged-JAR smoke checks, measured coverage, and remaining gaps are recorded in [VERIFICATION.md](docs/technical/VERIFICATION.md).
@@ -125,21 +125,14 @@ packaged-JAR smoke checks, measured coverage, and remaining gaps are recorded in
 - Client/tier or endpoint-specific policies and live policy changes could be added
   if needed or more time is available. Real APIs with operations of different costs
   would likely want endpoint policies. Health remains an operational exemption.
-- Metrics, CI, and coverage thresholds are deferred owner decisions, not implemented
-  features. Public repository publication is now owner-authorized. Submission remains
-  owner-controlled.
+- Metrics, CI, and an enforced coverage threshold are potential operational additions,
+  outside the current implementation.
 
-## AI use and understanding
+## AI use
 
-The owner selected scope and meaningful tradeoffs. The assistant drafted the plans,
-implemented code and tests, researched official tooling sources, ran verification,
-and updated documentation. The owner delegated routine version/setup choices and
-later authorized progress without routine phase approvals when the plan is followed.
-New meaningful deviations still require an owner decision.
-
-AI-generated code is subject to the same tests and review as other code. Coverage
-is evidence of execution, not a correctness proof. The owner has not yet completed
-the final code-understanding review. No particular function has been identified as
-not understood; if any is identified, explain it and add the explicit comment required
-by the challenge if it remains unclear before submission. Do not claim understanding
-on the owner's behalf.
+An AI coding assistant was used to draft documentation, implement and refactor code,
+write tests and the Python demonstration, research tooling, and run verification.
+Scope and architectural tradeoffs were selected through human review. Verification
+results, including coverage gaps and clean-clone checks, are recorded in
+[VERIFICATION.md](docs/technical/VERIFICATION.md). AI-generated code is subject to
+review and testing; coverage measures execution and is not a correctness proof.

@@ -1,8 +1,7 @@
 # Business requirements
 
-Status: scope and specification approved; implementation and verification complete.
-Owner understanding and submission-readiness review are in progress.
-The approved choices are recorded in the technical decision register.
+This document defines the problem outcomes and scope. Exact contracts and design
+tradeoffs are recorded in the technical documentation.
 
 ## Purpose
 
@@ -12,8 +11,8 @@ while allowing short bursts of legitimate activity. Per-client limits alone do
 not guarantee fairness, total service capacity, or protection against attackers
 who can invent new identities.
 
-For this challenge, success means a working, tested solution whose behavior and
-tradeoffs the owner understands and can explain during an interview.
+Success means a working, tested service with documented behavior, tradeoffs, and
+reproducible demonstrations.
 
 ## People and outcomes
 
@@ -31,15 +30,15 @@ in the demo does not authenticate or approve its sender.
 
 | ID | Outcome | Status |
 | --- | --- | --- |
-| B1 | Deliver the initial limiter within one Java process. | Approved scope |
-| B2 | Use a token bucket: allow a bounded burst and replenish the allowance over time. | Approved, including integer accounting and startup-configurable defaults |
-| B3 | Track clients separately under one shared policy so one client does not spend another's allowance. | Approved |
-| B4 | Return 429 with retry guidance and a simple error code for exhausted quota. | Approved; exact contract recorded in SPEC.md |
-| B5 | Preserve allowance rules for simultaneous requests and allow different clients to make progress independently. | Approved; per-client locking selected |
-| B6 | Impose a configurable hard limit on tracked clients; reject new clients with 503 when no space is available, preserving existing client quotas. | Defaults and saturation response approved; revisitable business policy |
+| B1 | Deliver the initial limiter within one Java process. | Implemented |
+| B2 | Use a token bucket: allow a bounded burst and replenish the allowance over time. | Implemented; integer accounting and startup-configurable defaults |
+| B3 | Track clients separately under one shared policy so one client does not spend another's allowance. | Implemented |
+| B4 | Return 429 with retry guidance and a simple error code for exhausted quota. | Implemented; exact contract in SPEC.md |
+| B5 | Preserve allowance rules for simultaneous requests and allow different clients to make progress independently. | Implemented with per-client locking |
+| B6 | Impose a configurable hard limit on tracked clients; reject new clients with 503 when no space is available, preserving existing client quotas. | Implemented; configurable business policy |
 | B7 | Provide a reproducible demonstration, automated tests, and understandable documentation. | Required |
-| B8 | Demonstrate enforcement within a runnable API, checking requests locally before running the protected endpoint. | Approved integration scope |
-| B9 | Include logging, Docker packaging, and a coverage report aiming as close to 100% as practical. | Approved; no enforced threshold |
+| B8 | Demonstrate enforcement within a runnable API, checking requests locally before running the protected endpoint. | Implemented |
+| B9 | Include logging, Docker packaging, and a coverage report aiming as close to 100% as practical. | Implemented; no enforced threshold |
 
 An allowance is consumed on admission even if subsequent application work fails.
 All business endpoints share the client's allowance; the demo endpoint is enabled
@@ -62,7 +61,7 @@ response contracts live in the [technical specification](../technical/SPEC.md).
 Client capacity and the 503 response at saturation are business decisions that may
 be revisited as demand grows. Increasing supported usage, such as raising the client
 bound after checking resource needs, is a future option. The prototype continues
-to enforce the configured hard limit until such a change is explicitly approved.
+to enforce the configured hard limit until its configuration or policy changes.
 
 - Multiple instances sharing the same client allowance: spread traffic across
   application instances and support instance replacement without automatically
@@ -73,8 +72,8 @@ to enforce the configured hard limit until such a change is explicitly approved.
   implement if needed or more time is available. In a real API, different operations
   would likely benefit from their own endpoint policies.
 
-The owner requested these directions as roadmap notes. They are not initial-release
+These are roadmap extensions. They are not initial-release
 deliverables. Technical prerequisites are in the specification.
 
-Metrics, CI, and an enforced coverage threshold are deferred to the delivery review.
+Metrics, CI, and an enforced coverage threshold are not included.
 Metrics are optional in the challenge; CI and a numeric threshold are not required.
