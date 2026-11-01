@@ -159,3 +159,22 @@ A clean export of the staged Git tree (without `.tools`, build outputs, or untra
 files) also built successfully as `iol-rate-limiter:clean-checkout`; its Linux build
 reran all 17 tests successfully. This confirms the Docker build does not depend
 on the workstation's ignored toolchain/cache directories.
+
+## Fresh public GitHub clone verification
+
+After distinguishing the earlier clean Git export from an actual clone, the public
+repository was cloned into a new temporary directory using `git clone`. Tested
+commit: `afa5fc0996778b56eb1ddcdaf56d52139d786b8f`. The new worktree was clean and
+contained neither `.tools` nor `target`.
+
+`docker --context colima build --no-cache --progress=plain -t
+iol-rate-limiter:github-clean-clone <clone>/rate-limiter` passed, downloading
+dependencies and compiling inside the build image without Docker layer-cache reuse.
+All 17 Java unit/integration tests passed, with no failures/errors/skips.
+
+The Python script from that downloaded clone was then run against the resulting
+`iol-rate-limiter:github-clean-clone` image: 26/26 cases passed, exit 0. Reports were
+written to `target/casuisticas-clean-clone` in the original working directory.
+Temporary scenario containers were removed normally. This verification covers
+the public-clone Docker path, not a native Windows or Linux workstation install.
+The subsequent commit only records this evidence; it does not change application code.
