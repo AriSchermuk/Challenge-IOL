@@ -127,7 +127,7 @@ They use real time and explicitly reject ambiguous batch timings of one second o
 longer. They do not establish benchmark throughput or replace deterministic core tests.
 
 Metrics, CI, and coverage thresholds remain deferred. Public repository publication
-is authorized; authentication/synchronization is in progress. Owner understanding
+and initial synchronization completed at [AriSchermuk/Challenge-IOL](https://github.com/AriSchermuk/Challenge-IOL). Owner understanding
 and submission-readiness review are not marked complete.
 
 ## Documentation consistency review

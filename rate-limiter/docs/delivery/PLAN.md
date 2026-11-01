@@ -28,7 +28,7 @@ Implemented. Wrapper verification passed; one real HTTP smoke test passed with n
 failures or skips. See [project README](../../README.md) for runnable instructions. Complete; no phase approval pause required.
 
 - Initialize the local repository and `rate-limiter` project after implementation
-  approval and setup review. Public GitHub hosting is now authorized; authentication/synchronization is in progress.
+  approval and setup review. Public GitHub hosting is complete: [AriSchermuk/Challenge-IOL](https://github.com/AriSchermuk/Challenge-IOL).
 - Add the selected build wrapper, dependencies, and minimal application entry point.
 - Add health and demo routes and minimal configuration validation.
 - Establish the documented build/run commands and a smoke test.

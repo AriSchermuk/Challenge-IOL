@@ -138,5 +138,4 @@ podés volver a ejecutar la suite o seleccionar otro directorio de salida.
 
 Read [DESIGN.md](DESIGN.md), the [business requirements](docs/business/REQUIREMENTS.md),
 and the [technical specification](docs/technical/SPEC.md) for rationale and future work.
-Metrics, CI, and an enforced coverage threshold remain deferred. Public GitHub
-publication is authorized; the final understanding/submission review is still in progress.
+Metrics, CI, and an enforced coverage threshold remain deferred. Public repository: [AriSchermuk/Challenge-IOL](https://github.com/AriSchermuk/Challenge-IOL); the final understanding/submission review is still in progress.

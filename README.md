@@ -11,7 +11,7 @@ the consolidated specification was approved before implementation.
 JUnit, Maven Wrapper, per-client locking, validated client-ID headers, a shared
 startup-configured policy, a hard client limit, logging, Docker, and line/branch
 coverage reporting are included. Exact delegated tool selections and their sources
-are recorded in SPEC.md. Metrics, CI, and a coverage threshold remain deferred. Public GitHub publication is authorized and awaiting authentication. Multiple-instance support, configurable algorithms, and alternate
+are recorded in SPEC.md. Metrics, CI, and a coverage threshold remain deferred. Public repository: [AriSchermuk/Challenge-IOL](https://github.com/AriSchermuk/Challenge-IOL). Multiple-instance support, configurable algorithms, and alternate
 client/endpoint policies are documented future directions.
 
 ## Run the demonstration
@@ -170,7 +170,7 @@ Source: the interview challenge brief supplied by the owner (not redistributed h
 - Logging, metrics, deployment ease, and defensive design are desirable extras.
 - Submit the repository link. Publication/submission is a separate owner decision.
 
-The local repository is initialized. Public GitHub publication has been requested;
-remote synchronization depends on completing GitHub authentication.
+The project is published at [AriSchermuk/Challenge-IOL](https://github.com/AriSchermuk/Challenge-IOL);
+local `main` tracks `origin/main`.
 [DESIGN.md](rate-limiter/DESIGN.md) describes the implemented architecture, tradeoffs,
 and AI usage. The owner understanding review is in progress.

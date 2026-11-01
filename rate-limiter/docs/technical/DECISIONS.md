@@ -61,7 +61,7 @@ and container builds; see VERIFICATION.md.
 The consolidated specification and implementation start were approved. Continued
 work within the plan is authorized without routine milestone approvals.
 Metrics, CI, and a numerical coverage threshold remain deferred. Public repository
-publication is now authorized; authentication is in progress.
+publication is complete at [AriSchermuk/Challenge-IOL](https://github.com/AriSchermuk/Challenge-IOL).
 
 ## Business ownership of capacity
 
@@ -163,4 +163,7 @@ understanding questions, a documentation-consistency review, and synchronization
 to a public repository in their own GitHub account. This authorizes repository
 creation and push without an additional publication checkpoint. Repository name
 will follow the workspace: `Challenge-IOL`; existing unrelated repositories must
-not be overwritten. GitHub authentication is required to finish publication.
+not be overwritten. Authentication completed and the public repository was created at
+[https://github.com/AriSchermuk/Challenge-IOL](https://github.com/AriSchermuk/Challenge-IOL). Initial implementation commit: `ec2a7f7`;
+`main` tracks `origin/main`. Publication does not mark the understanding review
+or interviewer submission complete.
